@@ -5,3 +5,11 @@ authors = ["Clifford T. Matthews <ctm@devctm.com>"]
 edition = "2018"
 
 [dependencies]
+actix-web = "0.7"
+listenfd = "0.3"
+maud = { version = "*", features = ["actix-web"] }
+phf = { version = "0.7.24", features = ["macros"] }
+
+[build-dependencies]
+rsass = "0.9.8"
+walkdir = "2"
