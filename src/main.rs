@@ -4,12 +4,12 @@ include!(concat!(env!("OUT_DIR"), "/statics.rs"));
 
 use {
     actix_web::{
-        error::ErrorNotFound, http::Method, middleware, server, App, HttpRequest, HttpResponse,
-        Result,
+        error::ErrorNotFound, http::Method, middleware::Logger, server, App, HttpRequest,
+        HttpResponse, Result,
     },
     listenfd::ListenFd,
     maud::{html, Markup, PreEscaped, DOCTYPE},
-    std::path::PathBuf,
+    std::{env, path::PathBuf},
 };
 
 fn stylesheet_link_tag(filename: &str, media: &str) -> Markup {
@@ -196,19 +196,22 @@ fn content_type(asset: &PathBuf) -> &'static str {
 }
 
 fn main() {
+    env::set_var("RUST_LOG", "actix_web=info");
+    env_logger::init();
+
     let mut listenfd = ListenFd::from_env();
 
     let mut server = server::new(|| {
         App::new()
+            .middleware(Logger::default())
             .resource("/assets/{asset:.*}", |r| r.method(Method::GET).f(asset))
             .resource("/", |r| r.f(index))
-            .middleware(middleware::Logger::default())
     });
 
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
         server.listen(l)
     } else {
-        server.bind("127.0.0.1:8088").unwrap()
+        server.bind("0.0.0.0:8088").unwrap()
     };
 
     server.run();

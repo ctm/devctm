@@ -9,6 +9,7 @@ actix-web = "0.7"
 listenfd = "0.3"
 maud = { version = "*", features = ["actix-web"] }
 phf = { version = "0.7.24", features = ["macros"] }
+env_logger = "0.6"
 
 [build-dependencies]
 rsass = "0.9.8"
