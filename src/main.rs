@@ -1,5 +1,7 @@
 #![feature(proc_macro_hygiene)]
 
+mod acme;
+
 include!(concat!(env!("OUT_DIR"), "/statics.rs"));
 
 use {
@@ -9,6 +11,7 @@ use {
     },
     listenfd::ListenFd,
     maud::{html, Markup, PreEscaped, DOCTYPE},
+    openssl::ssl::{SslAcceptor, SslAcceptorBuilder, SslFiletype, SslMethod},
     std::{env, path::PathBuf},
 };
 
@@ -64,7 +67,7 @@ In 1989, I founded Abacus Research & Development. We did a
                                     "#
                                     a href="https://archive.org/details/executor" {
                                         r#"
-clean-room reimplementation of the Macintosh ROM and portions of Mac OS"#
+    clean-room reimplementation of the Macintosh ROM and portions of Mac OS"#
                                     }
                                     r#".
 Technically what we did was very advanced for the time, but I was a poor CEO.
@@ -195,6 +198,17 @@ fn content_type(asset: &PathBuf) -> &'static str {
     CONTENT_TYPES.get(extension).unwrap()
 }
 
+fn ssl_builder(host: &str) -> SslAcceptorBuilder {
+    let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
+    builder
+        .set_private_key_file(format!("ssl/{}_key.pem", host), SslFiletype::PEM)
+        .unwrap();
+    builder
+        .set_certificate_chain_file(format!("ssl/{}_cert.pem", host))
+        .unwrap();
+    builder
+}
+
 fn main() {
     env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
@@ -205,13 +219,22 @@ fn main() {
         App::new()
             .middleware(Logger::default())
             .resource("/assets/{asset:.*}", |r| r.method(Method::GET).f(asset))
-            .resource("/", |r| r.f(index))
+            .resource("/", |r| r.method(Method::GET).f(index))
+            .resource("/.well-known/acme-challenge/{token}", |r| {
+                r.method(Method::GET).f(acme::nonce)
+            })
     });
 
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
         server.listen(l)
     } else {
-        server.bind("0.0.0.0:8088").unwrap()
+        server
+            .bind("0.0.0.0:8088")
+            .unwrap()
+            .bind_ssl("0.0.0.0:8089", ssl_builder("devctm"))
+            .unwrap()
+            .bind_ssl("0.0.0.0:8090", ssl_builder("ardi"))
+            .unwrap()
     };
 
     server.run();
