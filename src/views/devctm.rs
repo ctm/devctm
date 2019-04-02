@@ -91,7 +91,7 @@ I am "training my brain" as effectively as I've been "#
                                     a href="https://actix.rs" { "actix" }
                                 ", "
                                     a href="https://maud.lambda.xyz" { "maud" }
-                                "and "
+                                " and "
                                     a href="https://github.com/kaj/rsass" { "rsass" }
                                 ". I wrote "
                                     a href="https://github.com/ctm/actix-web-lets-encrypt" { "actix-web-lets-encrypt" }
