@@ -7,7 +7,7 @@ use {
         actix::Actor, error::ErrorNotFound, http::Method, middleware::Logger, server, App,
         HttpRequest, HttpResponse, Result,
     },
-    actix_web_lets_encrypt::{CertBuilder, LetsEncrypt},
+    actix_web_lets_encrypt::LetsEncrypt,
     listenfd::ListenFd,
     maud::{html, Markup, PreEscaped, DOCTYPE},
     std::{env, path::PathBuf},
@@ -211,28 +211,14 @@ fn main() {
 
     let mut listenfd = ListenFd::from_env();
 
-    // TODO: get port config from environment variables so that I can
-    //       build a container and test it without having to take the
-    //       production container down.  OTOH, this mix of certs
-    //       allowed me to end-to-end test that I do properly support
-    //       multiple domains in a single cert and certs coming from
-    //       Let's Encrypt's test server, so I have that going for me.
-    let devctm_prod = CertBuilder::new("0.0.0.0:8089", &["devctm.com"]).email("ctm@devctm.com");
+    // To run locally w/o any https support:
+    // DEVCTM_LE_CONFIG='{"cert_builders":[]}'
 
-    let ardi_prod =
-        CertBuilder::new("0.0.0.0:8090", &["ardi.com", "sceim.net"]).email("ctm@ardi.com");
-
-    let devctm_test = CertBuilder::new("0.0.0.0:8091", &["test.devctm.com"])
-        .email("ctm@devctm.com")
-        .test();
+    // My overly complicated production deploy:
+    // DEVCTM_LE_CONFIG='{"nonce_directory":"/var/devctm","ssl_directory":"ssl","cert_builders":[{"addrs":["0.0.0.0:8089"],"domains":["devctm.com"],"email":"ctm@devctm.com"},{"addrs":["0.0.0.0:8090"],"domains":["ardi.com","sceim.net"],"email":"ctm@ardi.com"},{"addrs":["0.0.0.0:8091"],"domains":["test.devctm.com"],"email":"ctm@devctm.com","production":false}]}'
 
     // 8088 is for all http and is bound after we set up the server.
-    let app_encryption_enabler = LetsEncrypt::encryption_enabler()
-        .nonce_directory("/var/devctm")
-        .ssl_directory("ssl")
-        .add_cert(devctm_prod)
-        .add_cert(ardi_prod)
-        .add_cert(devctm_test);
+    let app_encryption_enabler = LetsEncrypt::encryption_enabler_from_env("DEVCTM_LE_CONFIG");
 
     let server_encryption_enabler = app_encryption_enabler.clone();
 

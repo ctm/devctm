@@ -10,7 +10,7 @@ listenfd = "0.3"
 maud = { version = "*", features = ["actix-web"] }
 phf = { version = "0.7.24", features = ["macros"] }
 env_logger = "0.6"
-actix-web-lets-encrypt = { git = "https://github.com/ctm/actix-web-lets-encrypt" }
+actix-web-lets-encrypt = { version = "0.2.0", git = "https://github.com/ctm/actix-web-lets-encrypt" }
 
 [build-dependencies]
 rsass = "0.9.8"
