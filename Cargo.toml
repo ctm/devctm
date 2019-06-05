@@ -1,6 +1,6 @@
 [package]
 name = "devctm"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Clifford T. Matthews <ctm@devctm.com>"]
 edition = "2018"
 
@@ -10,7 +10,7 @@ listenfd = "0.3"
 maud = { version = "*", features = ["actix-web"] }
 phf = { version = "0.7.24", features = ["macros"] }
 env_logger = "0.6"
-actix-web-lets-encrypt = { version = "0.2.0", git = "https://github.com/ctm/actix-web-lets-encrypt" }
+actix-web-lets-encrypt = { version = "0.2.1", git = "https://github.com/ctm/actix-web-lets-encrypt", branch = "better_error" }
 
 [build-dependencies]
 rsass = "0.9.8"

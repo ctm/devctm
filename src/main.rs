@@ -1,5 +1,4 @@
 #![feature(proc_macro_hygiene)]
-
 mod views;
 
 include!(concat!(env!("OUT_DIR"), "/statics.rs"));
@@ -80,7 +79,7 @@ fn main() {
     // My overly complicated production deploy:
     // DEVCTM_LE_CONFIG='{"nonce_directory":"/var/devctm","ssl_directory":"ssl","cert_builders":[{"addrs":["0.0.0.0:8089"],"domains":["devctm.com"],"email":"ctm@devctm.com"},{"addrs":["0.0.0.0:8090"],"domains":["ardi.com","sceim.net"],"email":"ctm@ardi.com"},{"addrs":["0.0.0.0:8091"],"domains":["test.devctm.com"],"email":"ctm@devctm.com","production":false}]}'
 
-    // 8088 is for all http and is bound after we set up the server.
+    // DEVCTM_HTTP_PORT (or 8088) is for all http and is bound after we set up the server.
     let app_encryption_enabler = LetsEncrypt::encryption_enabler_from_env("DEVCTM_LE_CONFIG");
 
     let server_encryption_enabler = app_encryption_enabler.clone();
@@ -98,9 +97,12 @@ fn main() {
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
         server.listen(l)
     } else {
+        let port = env::var("DEVCTM_HTTP_PORT").unwrap_or_else(|_| "8088".to_string());
+        let address = format!("0.0.0.0:{}", port);
+
         server_encryption_enabler
             .attach_certificates_to(server)
-            .bind("0.0.0.0:8088")
+            .bind(address)
             .unwrap()
     };
     server_encryption_enabler.start();

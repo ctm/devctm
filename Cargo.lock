@@ -127,8 +127,8 @@ dependencies = [
 
 [[package]]
 name = "actix-web-lets-encrypt"
-version = "0.2.0"
-source = "git+https://github.com/ctm/actix-web-lets-encrypt#cd9f00b212a19ef653b01df929af3e8f56737800"
+version = "0.2.1"
+source = "git+https://github.com/ctm/actix-web-lets-encrypt?branch=better_error#afa3a46c5b6c0936f3f0ac1cc6730c84e85241fe"
 dependencies = [
  "acme-client 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "actix 0.7.9 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -403,10 +403,10 @@ dependencies = [
 
 [[package]]
 name = "devctm"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "actix-web 0.7.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "actix-web-lets-encrypt 0.2.0 (git+https://github.com/ctm/actix-web-lets-encrypt)",
+ "actix-web-lets-encrypt 0.2.1 (git+https://github.com/ctm/actix-web-lets-encrypt?branch=better_error)",
  "env_logger 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "listenfd 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "maud 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2085,7 +2085,7 @@ dependencies = [
 "checksum actix 0.7.9 (registry+https://github.com/rust-lang/crates.io-index)" = "6c616db5fa4b0c40702fb75201c2af7f8aa8f3a2e2c1dda3b0655772aa949666"
 "checksum actix-net 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)" = "8bebfbe6629e0131730746718c9e032b58f02c6ce06ed7c982b9fef6c8545acd"
 "checksum actix-web 0.7.18 (registry+https://github.com/rust-lang/crates.io-index)" = "e9f33c941e5e69a58a6bfef33853228042ed3799fc4b5a4923a36a85776fb690"
-"checksum actix-web-lets-encrypt 0.2.0 (git+https://github.com/ctm/actix-web-lets-encrypt)" = "<none>"
+"checksum actix-web-lets-encrypt 0.2.1 (git+https://github.com/ctm/actix-web-lets-encrypt?branch=better_error)" = "<none>"
 "checksum actix_derive 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "4300e9431455322ae393d43a2ba1ef96b8080573c0fc23b196219efedfb6ba69"
 "checksum adler32 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "7e522997b529f05601e05166c07ed17789691f562762c7f3b987263d2dedee5c"
 "checksum aho-corasick 0.6.10 (registry+https://github.com/rust-lang/crates.io-index)" = "81ce3d38065e618af2d7b77e10c5ad9a069859b4be3c2250f674af3840d9c8a5"
