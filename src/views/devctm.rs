@@ -99,16 +99,14 @@ I am "training my brain" as effectively as I've been "#
                             }
                         }
                         div#contact {
-                            h1 { "Availability and Rates" }
+                            h1 { "Availability" }
                             div.wrapper {
                                 p {
-                                    "My rate for Ruby is $200/hr."
-                                        br; br;
-                                    "My rate for Rust is $100/hr. through September 30th, 2019."
+                                    "I'm Available and willing to work for less if I get to do so in Rust."
                                         br; br;
                                     "If interested, please email "
-                                        a href="mailto:ctm@devctm.com" {
-                                            "ctm@devctm.com"
+                                        a href="mailto:clifford.t.matthews@gmail.com" {
+                                            "clifford.t.matthews@gmail.com"
                                         }
                                 }
                             }
