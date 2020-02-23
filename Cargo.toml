@@ -1,17 +1,20 @@
 [package]
 name = "devctm"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Clifford T. Matthews <ctm@devctm.com>"]
 edition = "2018"
 
 [dependencies]
-actix-web = { version = "0.7", features = ["alpn"] }
+actix = "0.9.0"
+actix-rt = "1.0.0"
+actix-web = "2.0"
 listenfd = "0.3"
-maud = { version = "*", features = ["actix-web"] }
-phf = { version = "0.7.24", features = ["macros"] }
-env_logger = "0.6"
-actix-web-lets-encrypt = { version = "0.2.1", git = "https://github.com/ctm/actix-web-lets-encrypt", branch = "better_error" }
+maud = { version = "0.21", features = ["actix-web"] }
+phf = { version = "0.8", features = ["macros"] }
+env_logger = "0.7"
+acme-lib = "0.7"
+actix-files = { version = "0.2", git = "https://github.com/ctm/actix-web", branch = "dot_starting_segments" }
 
 [build-dependencies]
-rsass = "0.9.8"
+rsass = "0.12"
 walkdir = "2"

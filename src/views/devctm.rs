@@ -1,11 +1,11 @@
 use {
-    crate::{stylesheet_link_tag, image_tag},
-    actix_web::HttpRequest,
-    maud::{DOCTYPE, Markup, PreEscaped, html},
+    crate::{image_tag, stylesheet_link_tag},
+    actix_web::HttpResponse,
+    maud::{html, PreEscaped, DOCTYPE},
 };
 
-pub fn index(_req: &HttpRequest) -> Markup {
-    html! {
+pub async fn index() -> HttpResponse {
+    HttpResponse::Ok().body(html! {
         (DOCTYPE)
         html {
             meta charset="utf-8";
@@ -137,5 +137,5 @@ I am "training my brain" as effectively as I've been "#
                 }
             }
         }
-    }
+    }.into_string())
 }

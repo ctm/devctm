@@ -5,14 +5,11 @@ include!(concat!(env!("OUT_DIR"), "/statics.rs"));
 
 use {
     crate::views::devctm,
-    actix_web::{
-        actix::Actor, error::ErrorNotFound, http::Method, middleware::Logger, server, App,
-        HttpRequest, HttpResponse, Result,
-    },
-    actix_web_lets_encrypt::LetsEncrypt,
+    actix_files::Files,
+    actix_web::{error::ErrorNotFound, web, App, HttpResponse, HttpServer, Responder},
     listenfd::ListenFd,
     maud::{html, Markup},
-    std::{env, path::PathBuf},
+    std::{env, io, path::PathBuf},
 };
 
 fn stylesheet_link_tag(filename: &str, media: &str) -> Markup {
@@ -31,13 +28,13 @@ fn image_tag(filename: &str, height: u16, width: u16, alt: &str) -> Markup {
     }
 }
 
-fn asset(req: &HttpRequest) -> Result<HttpResponse> {
-    let asset_path: PathBuf = req.match_info().query("asset")?;
-    let asset = asset_path.to_str().unwrap();
-
+pub async fn asset(info: web::Path<String>) -> impl Responder {
+    let asset = info.into_inner();
+    let asset_path: PathBuf = asset.clone().into();
     // unwrap is safe below, because we already put the &'static str
     // into the hash and we have no desire to support assets whose
     // names are non-utf8 byte sequences.
+    let asset: &str = &asset;
     match STATICS.get(asset) {
         None => Err(ErrorNotFound(format!("Could not find {}", asset))),
         Some(bytes) => Ok(HttpResponse::Ok()
@@ -67,7 +64,10 @@ fn content_type(asset: &PathBuf) -> &'static str {
     CONTENT_TYPES.get(extension).unwrap()
 }
 
-fn main() {
+const ACME_DIR: &str = "./acme";
+
+#[actix_rt::main]
+async fn main() -> io::Result<()> {
     env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
 
@@ -80,31 +80,21 @@ fn main() {
     // DEVCTM_LE_CONFIG='{"nonce_directory":"/var/devctm","ssl_directory":"ssl","cert_builders":[{"addrs":["0.0.0.0:8089"],"domains":["devctm.com"],"email":"ctm@devctm.com"},{"addrs":["0.0.0.0:8090"],"domains":["ardi.com","sceim.net"],"email":"ctm@ardi.com"},{"addrs":["0.0.0.0:8091"],"domains":["test.devctm.com"],"email":"ctm@devctm.com","production":false}]}'
 
     // DEVCTM_HTTP_PORT (or 8088) is for all http and is bound after we set up the server.
-    let app_encryption_enabler = LetsEncrypt::encryption_enabler_from_env("DEVCTM_LE_CONFIG");
 
-    let server_encryption_enabler = app_encryption_enabler.clone();
-
-    let mut server = server::new(move || {
-        App::new().configure(|app| {
-            let app = app
-                .middleware(Logger::default())
-                .resource("/assets/{asset:.*}", |r| r.method(Method::GET).f(asset))
-                .resource("/", |r| r.method(Method::GET).f(devctm::index));
-            app_encryption_enabler.register(app)
-        })
+    let mut server = HttpServer::new(move || {
+        App::new()
+            .route("/", web::get().to(devctm::index))
+            .service(web::resource("/assets/{asset:.*}").to(asset))
+            .service(Files::new("/.well-known/acme-challenge/", ACME_DIR))
     });
 
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
-        server.listen(l)
+        server.listen(l)?
     } else {
         let port = env::var("DEVCTM_HTTP_PORT").unwrap_or_else(|_| "8088".to_string());
         let address = format!("0.0.0.0:{}", port);
 
-        server_encryption_enabler
-            .attach_certificates_to(server)
-            .bind(address)
-            .unwrap()
+        server.bind(address)?
     };
-    server_encryption_enabler.start();
-    server.run();
+    server.run().await
 }
