@@ -1,4 +1,6 @@
 #![feature(proc_macro_hygiene)]
+mod acme_lib;
+mod lets_encrypt;
 mod views;
 
 include!(concat!(env!("OUT_DIR"), "/statics.rs"));
@@ -9,6 +11,7 @@ use {
     actix_web::{error::ErrorNotFound, web, App, HttpResponse, HttpServer, Responder},
     listenfd::ListenFd,
     maud::{html, Markup},
+    openssl::ssl::{SslAcceptor, SslFiletype, SslMethod},
     std::{env, io, path::PathBuf},
 };
 
@@ -64,7 +67,11 @@ fn content_type(asset: &PathBuf) -> &'static str {
     CONTENT_TYPES.get(extension).unwrap()
 }
 
-const ACME_DIR: &str = "./acme";
+// TODO: DRY the /var/lib/lets-encrypt
+
+const ACME_DIR: &str = "/var/lib/lets-encrypt/acme";
+const PERSISTENCE_DIR: &str = "/var/lib/lets-encrypt/persistence";
+const CERT_DIR: &str = "/var/lib/lets-encrypt/key_and_cert";
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
@@ -81,20 +88,40 @@ async fn main() -> io::Result<()> {
 
     // DEVCTM_HTTP_PORT (or 8088) is for all http and is bound after we set up the server.
 
-    let mut server = HttpServer::new(move || {
-        App::new()
-            .route("/", web::get().to(devctm::index))
-            .service(web::resource("/assets/{asset:.*}").to(asset))
-            .service(Files::new("/.well-known/acme-challenge/", ACME_DIR))
-    });
+    let mut key_path = None;
+    let mut cert_path = None;
 
-    server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
-        server.listen(l)?
-    } else {
-        let port = env::var("DEVCTM_HTTP_PORT").unwrap_or_else(|_| "8088".to_string());
-        let address = format!("0.0.0.0:{}", port);
+    loop {
+        let mut server = HttpServer::new(move || {
+            App::new()
+                .route("/", web::get().to(devctm::index))
+                .service(web::resource("/assets/{asset:.*}").to(asset))
+                .service(Files::new("/.well-known/acme-challenge/", ACME_DIR))
+        });
 
-        server.bind(address)?
-    };
-    server.run().await
+        server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
+            server.listen(l)?
+        } else {
+            let port = env::var("DEVCTM_HTTP_PORT").unwrap_or_else(|_| "8088".to_string());
+            let address = format!("0.0.0.0:{}", port);
+
+            server.bind(address)?
+        };
+        if let Some(key_path) = key_path.take() {
+            if let Some(cert_path) = cert_path.take() {
+                let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
+                builder
+                    .set_private_key_file(&key_path, SslFiletype::PEM)
+                    .unwrap();
+                builder.set_certificate_chain_file(&cert_path).unwrap();
+                server = server.bind_openssl("0.0.0.0:8090", builder).unwrap();
+            }
+        }
+        let server = server.run();
+        if let Some((k_path, c_path)) = lets_encrypt::start(&server) {
+            key_path = Some(k_path);
+            cert_path = Some(c_path);
+        };
+        server.await?
+    }
 }

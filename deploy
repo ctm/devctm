@@ -1,0 +1,14 @@
+#! /bin/bash
+
+set -o errexit
+set -o pipefail
+
+tag="$(date +%Y%m%d%H%M)"
+output="/tmp/${tag}.tar"
+
+time docker build --tag "devctm:$tag" ~/devctm
+docker container rm devctm 2> /dev/null || echo no devctm to remove
+docker container create --name devctm "devctm:$tag" /devctm
+docker container export --output "$output" devctm
+rsync -avz "$output" root@devctm.com:
+ssh root@devctm.com "time docker volume create lets-encrypt && docker import $tag.tar devctm:$tag && (docker kill devctm || echo no devctm to kill) && (docker container rm devctm 2> /dev/null || echo no devctm to remove) && docker run --mount source=lets-encrypt,target=/var/lib/lets-encrypt -p 80:8088 -p 443:8090 -d -e DEVCTM_SERVER=0.0.0.0 --name devctm devctm:$tag /devctm"
