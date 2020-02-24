@@ -10,7 +10,7 @@ pub async fn index() -> HttpResponse {
         html {
             meta charset="utf-8";
             head {
-                title { "Cliff's Toy Rust (Actix) Server" }
+                title { "Cliff's Toy Rust (actix-web) Server" }
                 ( stylesheet_link_tag("application", "all") )
             }
             body#more {
@@ -78,11 +78,9 @@ to show.  On the other hand, I "#
 ", so let's stipulate that I'm extremely internally motivated."
                             }
                             p {
-r#"I'm seeking work as a Rust programmer, even though I'm not yet nearly as
-good or efficient in Rust as I am in Ruby.  However, I learn quickly and believe
-I am "training my brain" as effectively as I've been "#
-                                    a href="https://github.com/ctm/Bataan-Memorial-Death-March" { "training my body" }
-".  My Rust will improve significantly."
+                                r#"I'm currently working full-time on "#
+                                    a href="https://github.com/ctm/mb2-doc" { "mb2" }
+                                r#", my new poker server.  As such, I'm not seeking work."#
                             }
                             p {
                                 "This page is a "
@@ -93,18 +91,16 @@ I am "training my brain" as effectively as I've been "#
                                     a href="https://maud.lambda.xyz" { "maud" }
                                 " and "
                                     a href="https://github.com/kaj/rsass" { "rsass" }
-                                ". I wrote "
-                                    a href="https://github.com/ctm/actix-web-lets-encrypt" { "actix-web-lets-encrypt" }
-                                " for https support."
+                                "."
                             }
                         }
                         div#contact {
                             h1 { "Availability" }
                             div.wrapper {
                                 p {
-                                    "I'm Available and willing to work for less if I get to do so in Rust."
+                                    "I'm not available, but I'm really enjoying Rust."
                                         br; br;
-                                    "If interested, please email "
+                                    "If interested in my poker work, please email "
                                         a href="mailto:clifford.t.matthews@gmail.com" {
                                             "clifford.t.matthews@gmail.com"
                                         }
