@@ -1,4 +1,4 @@
-from rust:1.41 as build
+from rust:1.42 as build
 
 WORKDIR /usr/src/devctm
 COPY ./ ./
